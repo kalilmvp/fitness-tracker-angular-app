@@ -9,15 +9,14 @@ import { map } from 'rxjs/operators';
 export class TrainingService {
   exerciseChanged = new Subject<Exercise>();
   exercisesChanged = new Subject<Exercise[]>();
+  finishedExercisesChanged = new Subject<Exercise[]>();
 
   private availableExercises: Exercise[] = [];
-  private runnningExercise: Exercise = null;
+  private runningExercise: Exercise = null;
   private exercises: Exercise[] = [];
 
 
-  constructor(private router: Router, private db: AngularFirestore) {
-
-  }
+  constructor(private router: Router, private db: AngularFirestore) {}
 
   fetchAvailableExercises() {
     return this.db
@@ -39,42 +38,46 @@ export class TrainingService {
   }
 
   startExercise(selectedExercise: string) {
-    this.runnningExercise = this.availableExercises.find(ex => ex.id === selectedExercise);
-    this.exerciseChanged.next(  {...this.runnningExercise});
+    this.runningExercise = this.availableExercises.find(ex => ex.id === selectedExercise);
+    this.exerciseChanged.next(  {...this.runningExercise});
   }
 
   completeExercise() {
     this.addDataToDatabase(
       {
-        ...this.runnningExercise,
+        ...this.runningExercise,
         date: new Date(),
         state: 'completed'
       }
     );
-    this.runnningExercise = null;
+    this.runningExercise = null;
     this.exerciseChanged.next(null);
   }
 
   cancelExercise(progress: number) {
     this.addDataToDatabase(
       {
-        ...this.runnningExercise,
-        duration: this.runnningExercise.duration * (progress / 100),
-        calories: this.runnningExercise.calories * (progress / 100),
+        ...this.runningExercise,
+        duration: this.runningExercise.duration * (progress / 100),
+        calories: this.runningExercise.calories * (progress / 100),
         date: new Date(),
         state: 'cancelled'
       }
     );
-    this.runnningExercise = null;
+    this.runningExercise = null;
     this.exerciseChanged.next(null);
   }
 
   getRunningExercise() {
-    return {...this.runnningExercise};
+    return {...this.runningExercise};
   }
 
-  getCompletedOrCancelledExercises() {
-    return this.exercises.slice();
+  fetchCompletedOrCancelledExercises() {
+    this.db.collection('finishedExercises')
+      .valueChanges()
+      .subscribe((exercises: Exercise[]) => {
+        this.finishedExercisesChanged.next(exercises);
+      });
   }
 
   private addDataToDatabase(exercise: Exercise) {
