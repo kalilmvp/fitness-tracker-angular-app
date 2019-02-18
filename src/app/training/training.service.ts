@@ -14,7 +14,6 @@ export class TrainingService {
 
   private availableExercises: Exercise[] = [];
   private runningExercise: Exercise = null;
-  private exercises: Exercise[] = [];
   private fbSubscriptions: Subscription[] = [];
 
   constructor(private router: Router, private db: AngularFirestore) {}

@@ -5,6 +5,8 @@ import {Subject} from 'rxjs/Subject';
 import {Router} from '@angular/router';
 import {AngularFireAuth} from 'angularfire2/auth';
 import {TrainingService} from '../training/training.service';
+import {MatSnackBar} from '@angular/material';
+import {UiService} from '../shared/ui.service';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +15,8 @@ export class AuthService {
 
   constructor(private router: Router,
               private afAuth: AngularFireAuth,
-              private trainingService: TrainingService) {
+              private trainingService: TrainingService,
+              private uiService: UiService) {
   }
 
   initAuthListener() {
@@ -32,23 +35,35 @@ export class AuthService {
   }
 
   registerUser(authData: AuthData) {
+    this.uiService.loadingStateChanged.next(true);
     this.afAuth.auth.createUserWithEmailAndPassword(authData.email, authData.password)
       .then(success => {
         console.log(success);
+        this.uiService.loadingStateChanged.next(false);
       })
       .catch(error => {
         console.log(error);
         this.isAuthenticated = false;
+        this.uiService.loadingStateChanged.next(false);
+        this.uiService.showSnackBar(error.message, null, {
+          duration: 3000
+        });
       });
   }
 
   login(authData: AuthData) {
+    this.uiService.loadingStateChanged.next(true);
     this.afAuth.auth.signInWithEmailAndPassword(authData.email, authData.password)
       .then(success => {
         console.log(success);
+        this.uiService.loadingStateChanged.next(false);
       })
       .catch(error => {
         console.log(error);
+        this.uiService.loadingStateChanged.next(false);
+        this.uiService.showSnackBar(error.message, null, {
+          duration: 3000
+        });
       });
   }
 
