@@ -1,11 +1,9 @@
-import {User} from './user.model';
 import {AuthData} from './auth-data.model';
 import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {Router} from '@angular/router';
 import {AngularFireAuth} from 'angularfire2/auth';
 import {TrainingService} from '../training/training.service';
-import {MatSnackBar} from '@angular/material';
 import {UiService} from '../shared/ui.service';
 
 @Injectable()
